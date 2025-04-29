@@ -5,19 +5,35 @@ import json
 import pandas as pd
 from datetime import datetime, timedelta
 
+def fetch_data(api_url):
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to fetch data: {response.status_code}")
 
 # Fetch weather data from open-meteo.com
-url = "https://api.open-meteo.com/v1/forecast?latitude=50.78&longitude=-0.99&current=is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&daily=sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&wind_speed_unit=kn&timezone=Europe%2FLondon"
-response = requests.get(url)
-data = response.json()
-#print(data['hourly']['time'][0]) #DEBUG
+wind_url = "https://api.open-meteo.com/v1/forecast?latitude=50.78&longitude=-0.99&current=is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&daily=sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&wind_speed_unit=kn&timezone=Europe%2FLondon"
+wind_data = fetch_data(wind_url)
+wind_hours = len(wind_data['hourly']['time'])
+
+# Fetch wave data from open-meteo.com
+wave_url = "https://marine-api.open-meteo.com/v1/marine?latitude=50.78&longitude=-0.99&hourly=wave_height,wave_direction,wave_period"
+wave_data = fetch_data(wave_url)
+wave_hours = len(wind_data['hourly']['time'])
+
+
+if wind_hours == wave_hours:
+    hours = wind_hours
+else:
+    raise ValueError("Mismatch in wind and wave data hours")
+
 
 # Create list object for JSON data output
 output_data = []
 
-
 # Create DataFrame
-df = pd.DataFrame(data, columns=['date', 'tide_1', 'tide_2', 'tide_3', 'tide_4'])
+df = pd.DataFrame(wind_data, columns=['date', 'tide_1', 'tide_2', 'tide_3', 'tide_4'])
 # Load the CSV file into a DataFrame
 df = pd.read_csv('tide_data.csv')
 
@@ -36,9 +52,9 @@ def get_low_tides(date):
     return low_tide_list
  
 
-# Function to get sunrise time for a specific date
+# Function to get sunrise time for a specific date from the wind API data
 def get_sunrise(date):
-    daily_data = data['daily']
+    daily_data = wind_data['daily']
     if date in daily_data['time']:
         index = daily_data['time'].index(date)
         date_string = daily_data['sunrise'][index]
@@ -47,9 +63,9 @@ def get_sunrise(date):
     else:
         return "Date not found in data"
 
-# Function to get sunset time for a specific date
+# Function to get sunset time for a specific date from the wind API data
 def get_sunset(date):
-    daily_data = data['daily']
+    daily_data = wind_data['daily']
     if date in daily_data['time']:
         index = daily_data['time'].index(date)
         date_string = daily_data['sunset'][index]
@@ -59,16 +75,10 @@ def get_sunset(date):
         return "Date not found in data"
 
 
-
-# Get the hourly array size
-hours = len(data['hourly']['time'])
-#print(hours) #DEBUG
-            
-            
 # Iterate through each hour in the hourly forecast
 for hour_index in range(hours):
 
-    timestamp_str = data['hourly']['time'][hour_index]
+    timestamp_str = wind_data['hourly']['time'][hour_index]
     timestamp_date_obj = datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M")
     
     #get the date
@@ -112,10 +122,12 @@ for hour_index in range(hours):
     output_row['datetime'] = timestamp_str
     output_row['daylight'] = daylight
     output_row['lowtide'] = tide
-    output_row['wind_direction'] = data['hourly']['wind_direction_10m'][hour_index]
-    output_row['wind_speed'] = data['hourly']['wind_speed_10m'][hour_index]
-    output_row['wind_gusts'] = data['hourly']['wind_gusts_10m'][hour_index]
-        
+    output_row['wind_direction'] = wind_data['hourly']['wind_direction_10m'][hour_index]
+    output_row['wind_speed'] = wind_data['hourly']['wind_speed_10m'][hour_index]
+    output_row['wind_gusts'] = wind_data['hourly']['wind_gusts_10m'][hour_index]
+    #include wave data
+    output_row['wave_height'] = wave_data['hourly']['wave_height'][hour_index]    
+    output_row['wave_period'] = wave_data['hourly']['wave_period'][hour_index]        
         
     output_data.append(output_row)
 #print(output_data) #DEBUG
