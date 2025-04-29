@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				sessionEmoji = '';
 				if (rowState === 'session') {
 					row.classList.add('session-row');
-					sessionEmoji = ' 🤟';
+					sessionEmoji = '🤙';
 				} else if (rowState === 'night') {
 					row.classList.add('night-row');
 				}
@@ -31,8 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				cell1.textContent = formatDateString(entry.datetime) + getTideEmoji(entry.lowtide) +  sessionEmoji;
 				cell2.textContent = convertDegreesToCompass(entry.wind_direction);
-				cell3.textContent = convertKnotsToBeaufort(entry.wind_speed);
-				cell4.textContent = entry.wind_speed + ' [' + entry.wind_gusts + ']';
+				cell3.textContent = 'F' + convertKnotsToBeaufort(entry.wind_speed) + ' : ' + entry.wind_speed + ' (' + entry.wind_gusts + ')';
+				cell4.textContent = entry.wave_period + 's (' + entry.wave_height + 'm)';
 
 			});
 			
@@ -70,12 +70,12 @@ function convertKnotsToBeaufort(knots) {
     if (knots <= 3) return '1'; // Light air
     if (knots <= 6) return '2'; // Light breeze
     if (knots <= 10) return '3'; // Gentle breeze
-    if (knots <= 16) return '4 💨'; // Moderate breeze
-    if (knots <= 21) return '5 💨'; // Fresh breeze
-    if (knots <= 27) return '6 💨💨'; // Strong breeze
-    if (knots <= 33) return '7 💨💨'; // Near gale
-    if (knots <= 40) return '8 💨💨💨'; // Gale
-    if (knots <= 47) return '9 💨💨💨'; // Strong gale
+    if (knots <= 16) return '4'; // Moderate breeze
+    if (knots <= 21) return '5'; // Fresh breeze
+    if (knots <= 27) return '6'; // Strong breeze
+    if (knots <= 33) return '7'; // Near gale
+    if (knots <= 40) return '8'; // Gale
+    if (knots <= 47) return '9'; // Strong gale
     if (knots <= 55) return '10'; // Storm
     if (knots <= 63) return '11'; // Violent storm
     return '12'; // Hurricane
