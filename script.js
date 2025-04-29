@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				cell1.textContent = formatDateString(entry.datetime) + getTideEmoji(entry.lowtide) +  sessionEmoji;
 				cell2.textContent = convertDegreesToCompass(entry.wind_direction);
-				cell3.textContent = 'F' + convertKnotsToBeaufort(entry.wind_speed) + ' : ' + entry.wind_speed + ' (' + entry.wind_gusts + ')';
+				cell3.textContent = entry.wind_speed + ' (' + entry.wind_gusts + ')';
 				cell4.textContent = entry.wave_period + 's (' + entry.wave_height + 'm)';
 
 			});
