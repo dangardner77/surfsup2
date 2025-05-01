@@ -11,15 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
 			
 			data.forEach(entry => {
 				
-				// boring, session, night
-				rowState = getRowState(entry.daylight,entry.lowtide,entry.wind_direction,entry.wind_speed,entry.wind_gusts);
+				// wind, wave, boring, night
+				rowState = getRowState(entry.daylight,entry.lowtide,entry.wind_direction,entry.wind_speed,entry.wind_gusts,entry.wave_period,entry.wave_height);
 						
 				const row = weatherTable.insertRow();
 
-				sessionEmoji = '';
-				if (rowState === 'session') {
-					row.classList.add('session-row');
-					sessionEmoji = '🤙';
+				if (rowState === 'wind') {
+					row.classList.add('wind-row');
+				} else if (rowState === 'wave') {
+					row.classList.add('wave-row');
 				} else if (rowState === 'night') {
 					row.classList.add('night-row');
 				}
@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
 				const cell3 = row.insertCell(2);
 				const cell4 = row.insertCell(3);
 
-				cell1.textContent = formatDateString(entry.datetime) + getTideEmoji(entry.lowtide) +  sessionEmoji;
+				cell1.textContent = formatDateString(entry.datetime) + getTideEmoji(entry.lowtide);
 				cell2.textContent = convertDegreesToCompass(entry.wind_direction);
-				cell3.textContent = entry.wind_speed + ' (' + entry.wind_gusts + ')';
-				cell4.textContent = entry.wave_period + 's (' + entry.wave_height + 'm)';
+				cell3.textContent = formatWindString(entry.wind_speed,entry.wind_gusts);
+				cell4.textContent = formatWaveString(entry.wave_period,entry.wave_height);
 
 			});
 			
@@ -81,10 +81,30 @@ function convertKnotsToBeaufort(knots) {
     return '12'; // Hurricane
 }
 
-function calculateAverageWind(speed,gusts) {
-	averageWind =  Math.round((speed + gusts) /2);
-    return averageWind;
+function formatWindString(speed,gusts) {
+	if (speed > 18) {
+		windEmoji = ' 💨💨';
+	} else if (speed > 12) {
+		windEmoji = ' 💨';
+	} else {
+        windEmoji = '';
+	}		
+	windString = speed + ' (' + gusts + ')' + windEmoji;
+	return windString;
 }
+
+function formatWaveString(period,height) {
+	if (period > 12 && height > 0.5) {
+		waveEmoji = ' 🌊🌊';
+	} else if (period > 10 && height > 0.3) {
+		waveEmoji = ' 🌊';
+	} else {
+        waveEmoji = '';
+	}		
+	waveString = period + 's (' + height + 'm)'+ waveEmoji;
+	return waveString;
+}
+
 
 function formatDateString(dateString) {
     const date = new Date(dateString);
@@ -106,8 +126,8 @@ function getDaylightEmoji(daylight) {
 	return daylightEmoji;
 }
 
-// returns state from: boring, session, night
-function getRowState(daylight,tide,direction,speed,gusts) {
+// returns state from: night, wind, wave, boring
+function getRowState(daylight,tide,direction,speed,gusts,period,height) {
 	// Calculate the average wind speed
 	const averageWind = (speed + gusts) / 2
 
@@ -115,7 +135,9 @@ function getRowState(daylight,tide,direction,speed,gusts) {
 	if (daylight == 'night') {
 		return 'night';
 	} else if (tide == 'low' && onshore(direction) && averageWind > 10)  {
-		return 'session';
+		return 'wind';
+	} else if (tide == 'low' && onshore(direction) && period > 12)  {
+		return 'wave';
 	} else {
 		return 'boring';
 	}
@@ -132,9 +154,9 @@ function onshore(direction) {
 
 function getTideEmoji(tide) {
 	if (tide == 'low') {
-		emoji = ' 🌅';
+		tideEmoji = ' 📉';
 	} else {
-		emoji = '';
+		tideEmoji = '';
 	}
-	return emoji;
+	return tideEmoji;
 }
