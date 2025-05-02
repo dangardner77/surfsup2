@@ -154,7 +154,7 @@ function onshore(direction) {
 
 function getTideEmoji(tide) {
 	if (tide == 'low') {
-		tideEmoji = ' 📉';
+		tideEmoji = ' 🏖️';
 	} else {
 		tideEmoji = '';
 	}
