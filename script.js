@@ -93,15 +93,24 @@ function formatWindString(speed,gusts) {
 	return windString;
 }
 
-function formatWaveString(period,height) {
+function formatWaveString(period, height) {
+	let waveEmoji = ''; // Declare variable with let
+
 	if (period > 12 && height > 0.5) {
+		// Ideal: Long period, medium+ height groundswell
 		waveEmoji = ' 🌊🌊';
 	} else if (period > 10 && height > 0.3) {
+		// Good: Long period, smaller height groundswell
+		waveEmoji = ' 🌊';
+	} else if (period > 3.5 && height > 0.7) {
+		// Tighter, more selective rule for short period wind swell
 		waveEmoji = ' 🌊';
 	} else {
-        waveEmoji = '';
-	}		
-	waveString = period + 's (' + height + 'm)'+ waveEmoji;
+		// No significant wave for foiling
+		waveEmoji = '';
+	}
+
+	const waveString = period + 's (' + height + 'm)' + waveEmoji; // Use const for unchanging variable
 	return waveString;
 }
 
