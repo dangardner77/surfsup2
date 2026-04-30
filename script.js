@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate a unique version string based on the current date
     const version = new Date().getTime();
 	
-    fetch('processed_weather_data.json?v=${version}')
+    fetch(`processed_weather_data.json?v=${version}`)
         .then(response => response.json())
         .then(data => {
 
